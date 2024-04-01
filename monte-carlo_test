@@ -1,0 +1,75 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Підінтегральна функція
+def function(x):
+    return np.exp(x)
+
+# Точне значення інтегралу
+def exact_integral_value():
+    return np.exp(b) - np.exp(a)
+
+# Генерація випадкової точки на площині
+def generate_random_point():
+    x = np.random.uniform(a, b)
+    y = np.random.uniform(0, np.exp(b))
+    return x, y
+
+# Значення функції у заданій точці
+def point_value(x):
+    return np.exp(x)
+
+# Метод Монте-Карло
+def monte_carlo_integration(num_samples):
+    total = 0
+    inside = 0
+    x_inside = []
+    y_inside = []
+    x_outside = []
+    y_outside = []
+    for _ in range(num_samples):
+        x, y = generate_random_point()
+        if y <= point_value(x):
+            inside += 1
+            x_inside.append(x)
+            y_inside.append(y)
+        else:
+            x_outside.append(x)
+            y_outside.append(y)
+        total += 1
+    area_ratio = inside / total
+    estimated_integral = area_ratio * (np.exp(b) * (b-a))
+    return estimated_integral, x_inside, y_inside, x_outside, y_outside
+
+# Кількість випробувань та межі інтегрування
+a = 1
+b = 2
+num_samples = 10000
+
+estimated_integral, x_inside, y_inside, x_outside, y_outside = monte_carlo_integration(num_samples)
+exact = exact_integral_value()
+absolute_error = abs(exact - estimated_integral)
+relative_error = absolute_error / exact
+
+# Вивід результатів
+output = f"""\
+ Оцінка інтегралу: {estimated_integral}
+ Точне значення інтегралу: {exact}
+ Абсолютна похибка: {absolute_error}
+ Відносна похибка: {relative_error}
+"""
+print(output)
+
+# Візуалізація результату
+x = np.linspace(a, b, 100)
+y = np.exp(x)
+plt.figure(figsize=(10, 6))
+plt.plot(x_inside, y_inside, 'yo', label='Точки під кривою')
+plt.plot(x_outside, y_outside, 'bo', label='Точки над кривою')
+plt.plot(x, y, 'g-', label='f(x) = e^x')
+plt.fill_between(x, 0, y, where=(x >= a) & (x <= b), alpha=0.3)
+plt.title('Візуалізація алгоритму Монте-Карло для f(x) = e^x')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend()
+plt.show()
