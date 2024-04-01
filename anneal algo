@@ -1,0 +1,60 @@
+import random
+import math
+
+def initial_state(board_size):
+    return [random.randint(0, board_size-1) for _ in range(board_size)]
+
+def cost(state):
+    attacks = 0
+    for i in range(len(state)):
+        for j in range(i+1, len(state)):
+            if state[i] == state[j] or abs(state[i] - state[j]) == j - i:
+                attacks += 1
+    return attacks
+
+def copy_state(state):
+    return state[:]
+
+def print_board(state):
+    print("\n")
+    for row in range(len(state)):
+        line = ""
+        for col in range(len(state)):
+            if col == state[row]:
+                line += " Q"
+            else:
+                line += " ."
+        print(line)
+    print("\n")
+
+def anneal(board_size, initial_temp=1000.0, final_temp=0.1, cooling_rate=0.95):
+    current_state = initial_state(board_size)
+    current_cost = cost(current_state)
+
+    while initial_temp > final_temp:
+        new_state = copy_state(current_state)
+        row = random.randint(0, board_size-1)
+        new_state[row] = random.randint(0, board_size-1)
+        new_cost = cost(new_state)
+
+        if new_cost < current_cost or random.random() < math.exp((current_cost - new_cost) / initial_temp):
+            current_state = new_state
+            current_cost = new_cost
+
+        initial_temp *= cooling_rate
+
+    return current_state
+
+def is_valid_solution(solution):
+    for i in range(len(solution)):
+        for j in range(i+1, len(solution)):
+            if solution[i] == solution[j] or abs(solution[i] - solution[j]) == j - i:
+                return False
+    return True
+
+
+board_size = 14
+solution = anneal(board_size)
+while not is_valid_solution(solution):
+    solution = anneal(board_size)
+print_board(solution)
