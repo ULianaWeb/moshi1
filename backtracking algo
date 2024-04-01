@@ -1,0 +1,28 @@
+import itertools
+
+def is_solution(perm):
+    for i, j in itertools.combinations(range(len(perm)), 2):
+        if abs(i - j) == abs(perm[i] - perm[j]):
+            return False
+    return True
+
+def backtracking(board_size):
+    for perm in itertools.permutations(range(board_size)):
+        if is_solution(perm):
+            return list(perm)
+
+def print_board(board):
+    print("\n")
+    for row in range(len(board)):
+        line = ""
+        for col in range(len(board)):
+            if col == board[row]:
+                line += " Q"
+            else:
+                line += " ."
+        print(line)
+    print("\n")
+
+board_size = 15
+solution = backtracking(board_size)
+print_board(solution)
