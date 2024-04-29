@@ -15,7 +15,7 @@ def distance_measure(x1, x2):
 def k_means_clustering(X, k):
     kmeans = KMeans(n_clusters=k)
     kmeans.fit(X)
-    return kmeans.labels_
+    return kmeans.labels_, kmeans.cluster_centers_
 
 def hierarchical_clustering(X, k):
     model = AgglomerativeClustering(n_clusters=k)
@@ -25,7 +25,7 @@ def hierarchical_clustering(X, k):
 k = 8
 
 # Кластеризація за методом K-середніх та ієрархічним методом
-k_means_labels = k_means_clustering(X, k)
+k_means_labels, k_means_centers = k_means_clustering(X, k)
 hierarchical_labels = hierarchical_clustering(X, k)
 
 # Візуалізація результатів
@@ -33,7 +33,9 @@ plt.figure(figsize=(12, 6))
 
 plt.subplot(1, 2, 1)
 plt.scatter(X[:, 0], X[:, 1], c=k_means_labels, cmap='viridis')
+plt.scatter(k_means_centers[:, 0], k_means_centers[:, 1], c='red', marker='x', label='Centroids')
 plt.title('K-means Clustering')
+plt.legend()
 
 plt.subplot(1, 2, 2)
 plt.scatter(X[:, 0], X[:, 1], c=hierarchical_labels, cmap='viridis')
