@@ -1,0 +1,154 @@
+from tkinter import *
+
+class TicTackToe:
+    def __init__(self):
+        # Ініціалізуємо гру з порожньою дошкою, X для гравця та O для комп'ютера
+        self.board = [' '] * 9
+        self.player = 'X'
+        self.computer = 'O'
+
+        # Ініціалізуємо Tkinter GUI
+        self.root = Tk()
+        self.root.title("Хрестики-нулики")
+        self.root.geometry('455x540')
+
+        # Створюємо кнопки для кожної клітинки ігрової дошки
+        self.buttons = []
+        for i in range(9):
+            self.buttons.append(Button(self.root, text=' ', width=7, height=3, font=('Courier New', 25, 'bold'),
+                                       command=lambda I=i: self.move(I), bg='#fcd9d9'))
+            self.buttons[i].grid(row=i // 3, column=i % 3)
+
+        # Запускаємо головний цикл GUI
+        #self.root.after(0, self.computer_move)  # Перший хід комп'ютера
+        self.root.mainloop()
+
+    def move(self, index):
+        # Функція для обробки ходу гравця
+        if self.board[index] == ' ':
+            self.board[index] = self.player
+            self.buttons[index].config(text=self.player, state=DISABLED)
+            # Перевіряємо, чи виграв гравець чи настала нічия
+            if self.check_winner(self.board, self.player):
+                self.game_over("Вітаємо, ви виграли!")
+            elif self.check_tie(self.board):
+                self.game_over("Нічия!")
+            else:
+                # Якщо гра ще не закінчилася, переходимо до ходу комп'ютера
+                self.computer_move()
+
+    def computer_move(self):
+        # Функція для визначення ходу комп'ютера за допомогою алгоритму minimax
+
+        # Ініціалізуємо змінні для збереження найкращого рейтингу і найкращого ходу
+        best_score = -float('inf')
+        best_move = None
+
+        # Перебираємо всі можливі ходи на дошці
+        for i in range(9):
+            # Якщо клітинка вільна
+            if self.board[i] == ' ':
+                # Робимо хід комп'ютера
+                self.board[i] = self.computer
+                # Рекурсивно визначаємо рейтинг ходу в максимізуючому режимі
+                score = self.minimax(self.board, False)
+                # Скасовуємо хід
+                self.board[i] = ' '
+                # Якщо поточний рейтинг кращий за найкращий рейтинг,
+                # зберігаємо новий рейтинг і хід
+                if score > best_score:
+                    best_score = score
+                    best_move = i
+
+        # Виконуємо найкращий хід комп'ютера
+        self.board[best_move] = self.computer
+        self.buttons[best_move].config(text=self.computer, state=DISABLED)
+        # Перевіряємо, чи виграв комп'ютер
+        if self.check_winner(self.board, self.computer):
+            self.game_over("Комп'ютер виграв!")
+        elif self.check_tie(self.board):
+            self.game_over("Нічия")
+
+    def minimax(self, board, maximizing_player):
+        # Алгоритм Minimax для визначення найкращого ходу
+
+        # Якщо комп'ютер виграв, повертаємо 1
+        if self.check_winner(board, self.computer):
+            return 1
+        # Якщо гравець виграв, повертаємо -1
+        elif self.check_winner(board, self.player):
+            return -1
+        # Якщо нічия, повертаємо 0
+        elif self.check_tie(board):
+            return 0
+
+        if maximizing_player:
+            # Якщо максимізується гравець, шукаємо найкращий хід
+            best_score = -float('inf')
+            for i in range(9):
+                if board[i] == ' ':
+                    board[i] = self.computer
+                    score = self.minimax(board, False)
+                    board[i] = ' '
+                    best_score = max(score, best_score)
+            return best_score
+        else:
+            # Якщо мінімізується гравець, шукаємо найгірший хід
+            best_score = float('inf')
+            for i in range(9):
+                if board[i] == ' ':
+                    board[i] = self.player
+                    score = self.minimax(board, True)
+                    board[i] = ' '
+                    best_score = min(score, best_score)
+            return best_score
+
+    def check_winner(self, board, player):
+        # Перевіряємо, чи виграв гравець
+
+        win = ((0, 1, 2), (3, 4, 5), (6, 7, 8), (0, 3, 6), (1, 4, 7), (2, 5, 8), (0, 4, 8), (2, 4, 6))
+        for i in win:
+            if board[i[0]] == board[i[1]] == board[i[2]] == player:
+                return True
+        return False
+
+    def check_tie(self, board):
+        # Перевіряємо, чи настала нічия
+        return all(x != ' ' for x in board)
+
+    def game_over(self, message):
+        # Функція для виведення повідомлення про завершення гри
+
+        # Вимикаємо кнопки
+        for button in self.buttons:
+            button.config(state=DISABLED)
+        # Виводимо повідомлення
+        label = Label(self.root, font=('Courier New', 13), text=message)
+        label.grid(row=3, column=0, columnspan=3, pady=10)
+        # Створюємо кнопку для перезапуску гри
+        play_again = Button(self.root, text="Грати знову", font=('Courier New', 13), bg='#f2bbbb', width=12, height=2, bd=1, relief='solid',
+                            command=self.restart)
+        play_again.grid(row=4, column=0, columnspan=3)
+
+    def restart(self):
+        # Функція для перезапуску гри
+
+        # Очищуємо дошку та змінні для початку нової гри
+        self.board = [' '] * 9
+        self.player = 'X'
+        self.computer = 'O'
+        # Оновлюємо кнопки
+        for i in range(9):
+            self.buttons[i].config(text=' ', state=NORMAL)
+        # Видаляємо повідомлення про завершення гри
+        for widget in self.root.grid_slaves():
+            if isinstance(widget, Label):
+                widget.destroy()
+        # Створюємо нову кнопку для перезапуску гри
+        play_again = Button(self.root, text="Грати знову", font=('Courier New', 13), bg='#f2bbbb', width=12, height=2, bd=1, relief='solid',
+                            command=self.restart)
+        play_again.grid(row=4, column=0, columnspan=3)
+
+
+# Запускаємо гру
+game = TicTackToe()
